@@ -1,18 +1,12 @@
-package main
+package recognition
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/Kagami/go-face"
-)
-
-var (
-	modelsDir = filepath.Join(".", "models")
-	imagesDir = filepath.Join(".", "images")
 )
 
 func isAValidImage(fileName string) bool {
@@ -26,7 +20,7 @@ func isAValidImage(fileName string) bool {
 	return false
 }
 
-func getReferencesPath(referenceDir string) []string {
+func GetReferencesPath(referenceDir string) []string {
 	refPaths := []string{}
 
 	err := filepath.Walk(referenceDir, func(path string, info os.FileInfo, err error) error {
@@ -48,7 +42,7 @@ func getReferencesPath(referenceDir string) []string {
 	return refPaths
 }
 
-func getReferences(recognizer *face.Recognizer, referencesPaths []string) ([]face.Face, error) {
+func GetReferences(recognizer *face.Recognizer, referencesPaths []string) ([]face.Face, error) {
 	faces := []face.Face{}
 	for _, refPath := range referencesPaths {
 		testFace, err := recognizer.RecognizeSingleFile(refPath)
@@ -62,7 +56,7 @@ func getReferences(recognizer *face.Recognizer, referencesPaths []string) ([]fac
 	return faces, nil
 }
 
-func searchForReferenceFaces(recognizer *face.Recognizer, testingImagePath string, referencesPaths []string) ([]string, error) {
+func SearchForReferenceFaces(recognizer *face.Recognizer, testingImagePath string, referencesPaths []string) ([]string, error) {
 	foundFaces, err := recognizer.RecognizeFile(testingImagePath)
 	if err != nil {
 		return nil, err
@@ -80,7 +74,7 @@ func searchForReferenceFaces(recognizer *face.Recognizer, testingImagePath strin
 	return matchingReferencesPath, nil
 }
 
-func getSamples(references []face.Face) ([]face.Descriptor, []int32) {
+func GetSamples(references []face.Face) ([]face.Descriptor, []int32) {
 	var samples []face.Descriptor
 	var samplesIndexes []int32
 	for index, ref := range references {
@@ -89,32 +83,4 @@ func getSamples(references []face.Face) ([]face.Descriptor, []int32) {
 	}
 
 	return samples, samplesIndexes
-}
-
-func main() {
-	rec, err := face.NewRecognizer(modelsDir)
-	if err != nil {
-		log.Fatalf("Can't init face reconizer, %v", err)
-	}
-	defer rec.Close()
-
-	referencesDir := filepath.Join(imagesDir, "references")
-	referencesPaths := getReferencesPath(referencesDir)
-	references, err := getReferences(rec, referencesPaths)
-	if err != nil {
-		log.Fatalf("Can't get references: %v", err)
-	}
-	samples, indexes := getSamples(references)
-	rec.SetSamples(samples, indexes)
-
-	testingImg := filepath.Join(imagesDir, "test.jpg")
-	matchingReferences, err := searchForReferenceFaces(rec, testingImg, referencesPaths)
-	if err != nil {
-		log.Fatalf("Can't search for references: %v", err)
-	}
-	if len(matchingReferences) <= 0 {
-		log.Fatalf("No matching references in image: %s", testingImg)
-	}
-
-	fmt.Printf("We found %v references in your picture: %s", len(matchingReferences), strings.Join(matchingReferences[:], ", "))
 }
