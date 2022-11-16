@@ -1,7 +1,7 @@
 # A face recognition project using Go, dlib and go-face
 
 ## Setup
-- First of all, follow the instructions here into the go-face (README.md)[https://github.com/Kagami/go-face/blob/c482b0e1acfb243025792fd8d59d385dca1c011b/README.md]
+- First of all, follow the instructions here into the go-face [README.md](https://github.com/Kagami/go-face/blob/c482b0e1acfb243025792fd8d59d385dca1c011b/README.md)
 - Clone the repository inside your go workspace
 - Dowload the dlib models
 ```sh
